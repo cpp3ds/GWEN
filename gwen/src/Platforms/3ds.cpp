@@ -7,7 +7,7 @@
 #include "Gwen/Macros.h"
 #include "Gwen/Platform.h"
 
-#if !defined(_WIN32) && !defined(GWEN_ALLEGRO_PLATFORM) && !defined(_3DS) && !defined(EMULATION)
+#if defined(_3DS) || defined(EMULATION)
 
 #include <time.h>
 
@@ -91,12 +91,12 @@ bool Gwen::Platform::HasFocusPlatformWindow( void* pPtr )
 
 void Gwen::Platform::GetDesktopSize( int & w, int & h )
 {
-	w = 1024;
-	h = 768;
+	w = 320;
+	h = 240;
 }
 
 void Gwen::Platform::GetCursorPos( Gwen::Point & po )
 {
 }
 
-#endif // ndef WIN32
+#endif // ifdef _3DS || EMULATION

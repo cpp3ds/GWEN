@@ -32,6 +32,12 @@
 #define GwenUtil_OutputDebugWideString( lpOutputString ) //wprintf( lpOutputString  )
 //#define GwenUtil_WideStringToFloat( _Str ) wcstof(_Str, NULL)
 
+#elif defined(_3DS)
+
+#define GwenUtil_OutputDebugCharString( lpOutputString ) //printf( lpOutputString )
+#define GwenUtil_OutputDebugWideString( lpOutputString ) //wprintf( lpOutputString  )
+//#define GwenUtil_WideStringToFloat( _Str ) wcstof(_Str, NULL)
+
 #else
 
 #error MUST_IMPLEMENT_PLATFORM
