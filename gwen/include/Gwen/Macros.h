@@ -4,8 +4,10 @@
 #define GWEN_MACROS_H
 #include <stdlib.h>
 #include <stdarg.h>
-#include <memory.h>
 #include <algorithm>
+#ifndef _3DS
+#include <memory.h>
+#endif
 
 #ifdef _WIN32
 

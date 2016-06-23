@@ -28,8 +28,10 @@
 #ifndef GWEN_GWEN_H
 #define GWEN_GWEN_H
 
-#include <stdlib.h>
+#ifndef _3DS
 #include <memory.h>
+#endif
+#include <stdlib.h>
 #include <set>
 #include <list>
 #include <algorithm>
