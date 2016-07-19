@@ -32,6 +32,11 @@ namespace Gwen
 				virtual void Toggle() { SetChecked( !IsChecked() ); }
 				virtual bool IsChecked() { return m_bChecked; }
 
+				virtual TextObject GetValue() { return m_strValue; }
+				virtual void SetValue( const TextObject & strValue ) {
+					m_strValue = strValue;
+				}
+
 				Gwen::Event::Caller	onChecked;
 				Gwen::Event::Caller	onUnChecked;
 				Gwen::Event::Caller	onCheckChanged;
@@ -44,6 +49,7 @@ namespace Gwen
 				void OnCheckStatusChanged();
 
 				bool m_bChecked;
+				TextObject m_strValue;
 		};
 
 		class GWEN_EXPORT CheckBoxWithLabel : public Base
