@@ -12,6 +12,7 @@
 
 #include <cpp3ds/Graphics/RenderTarget.hpp>
 #include <cpp3ds/Graphics/Color.hpp>
+#include <cpp3ds/Graphics/Text.hpp>
 #include <cpp3ds/Graphics/Texture.hpp>
 #include <cpp3ds/Graphics/VertexArray.hpp>
 #ifdef _3DS
@@ -59,13 +60,11 @@ namespace Gwen
 
 			inline void Flush()
 			{
-				if ( m_Buffer.getVertexCount() > 0 )
+				size_t count = m_Buffer.getVertexCount() - m_BufferIndex;
+				if ( count > 0 )
 				{
-					m_Target.draw( m_Buffer, m_RenderStates );
-#ifdef _3DS
-					C3D_Flush();
-#endif
-					m_Buffer.clear();
+					m_Target.draw( &m_Buffer[m_BufferIndex], count, m_Buffer.getPrimitiveType(), m_RenderStates );
+					m_BufferIndex += count;
 				}
 			}
 
@@ -95,6 +94,7 @@ namespace Gwen
 			cpp3ds::RenderTarget& m_Target;
 			cpp3ds::Color m_Color;
 			cpp3ds::VertexArray m_Buffer;
+			size_t m_BufferIndex;
 			cpp3ds::RenderStates m_RenderStates;
 			cpp3ds::View m_OriginalView;
 			int m_Height;

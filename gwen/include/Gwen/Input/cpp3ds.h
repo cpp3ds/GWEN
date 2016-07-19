@@ -109,10 +109,10 @@ namespace Gwen
 				{
 					case cpp3ds::Event::TouchMoved:
 					{
-						int dx = event.touch.x - m_MouseX;
-						int dy = event.touch.y - m_MouseY;
-						m_MouseX = event.touch.x;
-						m_MouseY = event.touch.y;
+						int dx = -m_Canvas->GetPos().x + event.touch.x - m_MouseX;
+						int dy = -m_Canvas->GetPos().y + event.touch.y - m_MouseY;
+						m_MouseX = event.touch.x - m_Canvas->GetPos().x;
+						m_MouseY = event.touch.y - m_Canvas->GetPos().y;
 						return m_Canvas->InputMouseMoved( m_MouseX, m_MouseY, dx, dy );
 					}
 
@@ -126,7 +126,7 @@ namespace Gwen
 //						else if (button == cpp3ds::Mouse::XButton2) m_XButton2MouseDown = true;
 //						return m_Canvas->InputMouseButton( button, true );
 						m_LeftMouseDown     = true;
-						m_Canvas->InputMouseMoved( event.touch.x, event.touch.y, 0, 0);
+						m_Canvas->InputMouseMoved(event.touch.x - m_Canvas->GetPos().x, event.touch.y - m_Canvas->GetPos().y, 0, 0);
 						return m_Canvas->InputMouseButton( 0, true );
 					}
 

@@ -7,7 +7,6 @@
 
 #include <cpp3ds/Graphics.hpp>
 #include <cpp3ds/Graphics/Font.hpp>
-#include <cpp3ds/Graphics/Text.hpp>
 
 #ifdef _3DS
 #include <citro3d.h>
@@ -32,7 +31,7 @@ struct TextureData
 };
 
 Gwen::Renderer::cpp3dsRenderer::cpp3dsRenderer( cpp3ds::RenderTarget& target ):
-		m_Target( target ), m_Color(), m_Buffer(), m_RenderStates( cpp3ds::RenderStates::Default ), m_Height( m_Target.getSize().y )
+		m_Target( target ), m_Color(), m_Buffer(), m_BufferIndex(0), m_RenderStates( cpp3ds::RenderStates::Default ), m_Height( m_Target.getSize().y )
 {
 	m_Buffer.setPrimitiveType( cpp3ds::Triangles );
 	m_RenderStates.blendMode = cpp3ds::BlendAlpha;
@@ -42,6 +41,9 @@ Gwen::Renderer::cpp3dsRenderer::~cpp3dsRenderer() { }
 
 void Gwen::Renderer::cpp3dsRenderer::Begin()
 {
+	m_Buffer.clear();
+	m_BufferIndex = 0;
+
 	m_OriginalView = m_Target.getView();
 	cpp3ds::FloatRect vrect;
 	vrect.left = 0;	vrect.top = 0;
@@ -57,6 +59,8 @@ void Gwen::Renderer::cpp3dsRenderer::Begin()
 void Gwen::Renderer::cpp3dsRenderer::End()
 {
 	m_Target.setView( m_OriginalView );
+	Flush();
+	m_Target.resetGLStates();
 }
 
 void Gwen::Renderer::cpp3dsRenderer::StartClip()
@@ -212,7 +216,6 @@ void Gwen::Renderer::cpp3dsRenderer::RenderText( Gwen::Font* pFont, Gwen::Point 
 		LoadFont( pFont );
 	}
 
-	const cpp3ds::Font* pSFFont = reinterpret_cast<cpp3ds::Font*>( pFont->data );
 
 	cpp3ds::Text sfStr;
 	sfStr.setString( text );
@@ -222,6 +225,10 @@ void Gwen::Renderer::cpp3dsRenderer::RenderText( Gwen::Font* pFont, Gwen::Point 
 	sfStr.setCharacterSize( pFont->realsize );
 	sfStr.setFillColor( m_Color );
 	m_Target.draw( sfStr );
+
+#ifdef _3DS
+	C3D_Flush();
+#endif
 }
 
 Gwen::Point Gwen::Renderer::cpp3dsRenderer::MeasureText( Gwen::Font* pFont, const Gwen::UnicodeString& text )
@@ -238,9 +245,10 @@ Gwen::Point Gwen::Renderer::cpp3dsRenderer::MeasureText( Gwen::Font* pFont, cons
 	if ( pSFFont ) {
 		cpp3ds::Text sfStr;
 		sfStr.setString( text );
-		sfStr.setFont( *pSFFont );
+		sfStr.useSystemFont();
+
 		sfStr.setCharacterSize( pFont->realsize );
-		return Gwen::Point( sfStr.getLocalBounds().width, pSFFont->getLineSpacing( pFont->realsize ) );
+		return Gwen::Point( sfStr.getLocalBounds().left + sfStr.getLocalBounds().width, pSFFont->getLineSpacing( pFont->realsize ) );
 	}
 
 	return Gwen::Point();
