@@ -123,7 +123,7 @@ void ComboBox::SelectItem( MenuItem* pItem, bool bFireChangeEvents )
 	if ( m_SelectedItem == pItem ) { return; }
 
 	m_SelectedItem = pItem;
-	SetText( m_SelectedItem->GetText() );
+	SetText( m_SelectedItem ? m_SelectedItem->GetText() : L"");
 	m_Menu->SetHidden( true );
 	Invalidate();
 
