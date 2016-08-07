@@ -72,27 +72,13 @@ void Gwen::Renderer::cpp3dsRenderer::StartClip()
 
 	float scale = Scale();
 
-#ifdef _3DS
-	y = 240 - y;
-	x = 320 - x;
-	C3D_SetScissor(GPU_SCISSOR_NORMAL, (y-h)*scale, (x-w)*scale, y*scale, x*scale);
-#else
-	// OpenGL's coords are from the bottom left
-	// so we need to translate them here.
-	y = m_Height - ( y + h );
-	glEnable( GL_SCISSOR_TEST );
-	glScissor( x * scale, y * scale, w * scale, h * scale );
-#endif
+	m_RenderStates.scissor = cpp3ds::UintRect(x * scale, y * scale, w * scale, h * scale);
 }
 
 void Gwen::Renderer::cpp3dsRenderer::EndClip()
 {
 	Flush();
-#ifdef _3DS
-	C3D_SetScissor(GPU_SCISSOR_DISABLE, 0, 0, 0, 0);
-#else
-	glDisable( GL_SCISSOR_TEST );
-#endif
+	m_RenderStates.scissor = cpp3ds::UintRect();
 }
 
 void Gwen::Renderer::cpp3dsRenderer::SetDrawColor( Gwen::Color color )
@@ -181,11 +167,11 @@ void Gwen::Renderer::cpp3dsRenderer::DrawTexturedRect( Gwen::Texture* pTexture, 
 
 void Gwen::Renderer::cpp3dsRenderer::LoadFont( Gwen::Font* font )
 {
-	font->realsize = font->size * Scale();
-
 	cpp3ds::Font* pFont = new cpp3ds::Font();
 
-	if ( !pFont->loadFromFile( Utility::UnicodeToString( font->facename ) ) )
+	font->realsize = font->size * Scale();
+
+	if (!pFont->loadFromFile( Utility::UnicodeToString(font->facename)))
 	{
 		// Ideally here we should be setting the font to a system default font here.
 		delete pFont;
@@ -210,21 +196,29 @@ void Gwen::Renderer::cpp3dsRenderer::RenderText( Gwen::Font* pFont, Gwen::Point 
 	Translate( pos.x, pos.y );
 
 	// If the font doesn't exist, or the font size should be changed
-	if ( !pFont->data || fabs( pFont->realsize - pFont->size * Scale() ) > 2 )
+	if ((!pFont->data && !pFont->facename.empty()) || fabs(pFont->realsize - pFont->size * Scale()) > 2)
 	{
 		FreeFont( pFont );
 		LoadFont( pFont );
 	}
 
+	if (!pFont->realsize)
+		pFont->realsize = pFont->size * Scale();
+
+	const cpp3ds::Font* pSFFont = reinterpret_cast<cpp3ds::Font*>(pFont->data);
 
 	cpp3ds::Text sfStr;
 	sfStr.setString( text );
-//	sfStr.setFont( *pSFFont );
-	sfStr.useSystemFont();
+
+	if (pSFFont)
+		sfStr.setFont( *pSFFont );
+	else
+		sfStr.useSystemFont();
+
 	sfStr.move( pos.x, pos.y );
 	sfStr.setCharacterSize( pFont->realsize );
 	sfStr.setFillColor( m_Color );
-	m_Target.draw( sfStr );
+	m_Target.draw( sfStr, m_RenderStates.scissor );
 
 #ifdef _3DS
 	C3D_Flush();
@@ -234,7 +228,7 @@ void Gwen::Renderer::cpp3dsRenderer::RenderText( Gwen::Font* pFont, Gwen::Point 
 Gwen::Point Gwen::Renderer::cpp3dsRenderer::MeasureText( Gwen::Font* pFont, const Gwen::UnicodeString& text )
 {
 	// If the font doesn't exist, or the font size should be changed
-	if ( !pFont->data || fabs( pFont->realsize - pFont->size * Scale() ) > 2 )
+	if ((!pFont->data && !pFont->facename.empty()) || fabs(pFont->realsize - pFont->size * Scale()) > 2)
 	{
 		FreeFont( pFont );
 		LoadFont( pFont );
@@ -242,16 +236,19 @@ Gwen::Point Gwen::Renderer::cpp3dsRenderer::MeasureText( Gwen::Font* pFont, cons
 
 	const cpp3ds::Font* pSFFont = reinterpret_cast<cpp3ds::Font*>( pFont->data );
 
-	if ( pSFFont ) {
-		cpp3ds::Text sfStr;
-		sfStr.setString( text );
+	if (!pFont->realsize)
+		pFont->realsize = pFont->size * Scale();
+
+	cpp3ds::Text sfStr;
+	sfStr.setString( text );
+	sfStr.setCharacterSize( pFont->realsize );
+
+	if (pSFFont)
+		sfStr.setFont( *pSFFont );
+	else
 		sfStr.useSystemFont();
 
-		sfStr.setCharacterSize( pFont->realsize );
-		return Gwen::Point( sfStr.getLocalBounds().left + sfStr.getLocalBounds().width, pSFFont->getLineSpacing( pFont->realsize ) );
-	}
-
-	return Gwen::Point();
+	return Gwen::Point( sfStr.getLocalBounds().left + sfStr.getLocalBounds().width, sfStr.getLocalBounds().top + sfStr.getLocalBounds().height);
 }
 
 void Gwen::Renderer::cpp3dsRenderer::LoadTexture( Gwen::Texture* pTexture )
