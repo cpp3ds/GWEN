@@ -208,7 +208,8 @@ void Gwen::Renderer::cpp3dsRenderer::RenderText( Gwen::Font* pFont, Gwen::Point 
 	const cpp3ds::Font* pSFFont = reinterpret_cast<cpp3ds::Font*>(pFont->data);
 
 	cpp3ds::Text sfStr;
-	sfStr.setString( text );
+	std::string tmp(text.begin(), text.end());
+	sfStr.setString( tmp );
 
 	if (pSFFont)
 		sfStr.setFont( *pSFFont );
@@ -240,7 +241,8 @@ Gwen::Point Gwen::Renderer::cpp3dsRenderer::MeasureText( Gwen::Font* pFont, cons
 		pFont->realsize = pFont->size * Scale();
 
 	cpp3ds::Text sfStr;
-	sfStr.setString( text );
+	std::string tmp(text.begin(), text.end());
+	sfStr.setString( tmp );
 	sfStr.setCharacterSize( pFont->realsize );
 
 	if (pSFFont)
