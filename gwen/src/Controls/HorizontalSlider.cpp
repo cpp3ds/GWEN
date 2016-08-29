@@ -38,6 +38,7 @@ void HorizontalSlider::OnMouseClickLeft( int x, int y, bool bDown )
 void HorizontalSlider::Layout( Skin::Base* /*skin*/ )
 {
 	m_SliderBar->SetSize( 15, Height() );
+	UpdateBarFromValue();
 }
 
 void HorizontalSlider::Render( Skin::Base* skin )
